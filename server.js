@@ -5,10 +5,18 @@ const https = require("https");
 const fs = require("fs");
 const axios = require("axios");
 const app = express();
+const feedbackRoutes = require("./routes/feedbackRoutes");
+
 const Port = process.env.Port || 6058;
+const connection = require("./config/db");
+
 app.use(cors());
 app.options("*", cors());
 app.use(express.json());
+app.use("/api/feedback", feedbackRoutes);
+
+//connecting the db
+connection();
 
 const local = true;
 let credentials = {};
