@@ -18,7 +18,7 @@ app.use("/api/feedback", feedbackRoutes);
 //connecting the db
 connection();
 
-const local = true;
+const local = false;
 let credentials = {};
 
 if (local) {
