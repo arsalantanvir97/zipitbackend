@@ -4,6 +4,7 @@ var smtpConfiq = {
   auth: {
     user: "noreplydummy1256@gmail.com",
     pass: "rirlrvjneqjubemx",
+    port: 587,
   },
 };
 const generatemail = async (email, subject, html) => {
