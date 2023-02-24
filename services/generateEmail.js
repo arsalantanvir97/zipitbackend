@@ -2,9 +2,10 @@ const nodemailer = require("nodemailer");
 var smtpConfiq = {
   service: "Gmail",
   auth: {
-    user: "noreplydummy1256@gmail.com",
-    pass: "rirlrvjneqjubemx",
+    user: "admin@zipitsolar.com",
+    pass: "svpfnhagvmvkpyse",
     port: 587,
+    secure: true,
   },
 };
 const generatemail = async (email, subject, html) => {

@@ -6,6 +6,9 @@ const fs = require("fs");
 const axios = require("axios");
 const app = express();
 const feedbackRoutes = require("./routes/feedbackRoutes");
+const stationRoutes = require("./routes/stationRoutes");
+const foreCast = require("./utils/forecast");
+const geoCode = require("./utils/geocode");
 
 const Port = process.env.Port || 6058;
 const connection = require("./config/db");
@@ -14,11 +17,12 @@ app.use(cors());
 app.options("*", cors());
 app.use(express.json());
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/stations", stationRoutes);
 
 //connecting the db
 connection();
 
-const local = false;
+const local = true;
 let credentials = {};
 
 if (local) {
@@ -60,4 +64,30 @@ app.use("/test", async (req, res) => {
     console.log("Error", err);
     return res.status(500).json(err);
   }
+});
+
+//for current weather
+app.get("/weather", (req, res) => {
+  if (!req.query.address) {
+    return res.send({
+      error: "Please provide a Location",
+    });
+  }
+  geoCode(
+    req.query.address,
+    (error, { latitude, longitude, location } = {}) => {
+      if (error) {
+        res.send({ error });
+      }
+      foreCast(latitude, longitude, (error, forecastData) => {
+        if (error) {
+          res.send({ error });
+        }
+        console.log("forecastData", forecastData);
+        res.send({
+          forecast: forecastData,
+        });
+      });
+    }
+  );
 });

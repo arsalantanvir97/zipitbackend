@@ -6,6 +6,7 @@ const FeedbackSchema = new mongoose.Schema(
     email: { type: String },
     company: { type: String },
     message: { type: String },
+    phone: { type: String },
   },
   { timestamps: true }
 );
