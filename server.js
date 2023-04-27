@@ -4,11 +4,17 @@ const cors = require("cors");
 const https = require("https");
 const fs = require("fs");
 const axios = require("axios");
+const uuid   = require("uuid")
+
 const app = express();
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const stationRoutes = require("./routes/stationRoutes");
+const userRoutes = require("./routes/userRoutes");
+
 const foreCast = require("./utils/forecast");
 const geoCode = require("./utils/geocode");
+const Stripe  = require("stripe")
+const stripe = Stripe("sk_test_OVw01bpmRN2wBK2ggwaPwC5500SKtEYy9V");
 
 const Port = process.env.Port || 6058;
 const connection = require("./config/db");
@@ -18,11 +24,12 @@ app.options("*", cors());
 app.use(express.json());
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/stations", stationRoutes);
+app.use("/api/user", userRoutes);
 
 //connecting the db
 connection();
 
-const local = true;
+const local = false;
 let credentials = {};
 
 if (local) {
@@ -38,7 +45,51 @@ if (local) {
     ca: fs.readFileSync("../certs/ca-bundle"),
   };
 }
+app.post("/api/checkout", async (req, res) => {
+  console.log("Request:", req.body);
 
+  let error;
+  let status;
+  try {
+    const { product, token } = req.body;
+    console.log(product, typeof product, "prodprice");
+    const customer = await stripe.customers.create({
+      email: token.email,
+      source: token.id
+    });
+
+    const idempotency_key =  uuid.v4()
+    console.log('idempotency_key',idempotency_key,customer)
+    const charge = await stripe.charges.create(
+      {
+        amount: product * 100,
+        currency: "usd",
+        customer: customer.id,
+        receipt_email: token.email,
+        // description: `Purchased the ${product.name}`,
+        shipping: {
+          name: token.card.name,
+          address: {
+            line1: token.card.address_line1,
+            line2: token.card.address_line2,
+            city: token.card.address_city,
+            country: token.card.address_country,
+            postal_code: token.card.address_zip
+          }
+        }
+      },
+      { idempotencyKey: idempotency_key }
+    );
+    console.log("Charge:", { charge });
+    res.json(charge);
+
+    status = "success";
+  } catch (error) {
+    console.error("Error:", error);
+    status = "failure";
+    res.json(error);
+  }
+});
 app.get("/", (req, res) => {
   res.send("Zip it solar is Running");
 });

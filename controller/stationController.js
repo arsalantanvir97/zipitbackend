@@ -2,6 +2,7 @@ const Station = require("../models/StationModel");
 exports.getAllStations = async (req, res) => {
   const { page, limit, fieldname, order, from, to, keyword, selection, state } =
     req.query;
+    console.log('getAllStationsgetAllStations')
   const currentpage = page ? parseInt(page, 10) : 1;
   const per_page = limit ? parseInt(limit, 10) : 10;
   const CurrentField = fieldname ? fieldname : "createdAt";

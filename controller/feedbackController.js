@@ -14,7 +14,7 @@ const createFeedback = async (req, res) => {
     console.log("feedback", feedback);
     const feedbackcreated = await feedback.save();
     console.log("FeedbackCreated", feedbackcreated);
-    const html = `<p>${Name} with phone: ${phone} from mail: ${email} sent you the following message.
+    const html = `<p>${Name} from company${company} with phone: ${phone} from mail: ${email} sent you the following message.
       \n\n ${message}      
             </p>`;
     await generateEmail("info@zipitsolar.com", "ZipIt - Contact Us", html);
