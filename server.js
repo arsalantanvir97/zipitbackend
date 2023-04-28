@@ -29,7 +29,7 @@ app.use("/api/user", userRoutes);
 //connecting the db
 connection();
 
-const local = true;
+const local = false;
 let credentials = {};
 
 if (local) {
