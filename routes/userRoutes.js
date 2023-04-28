@@ -14,6 +14,7 @@ router.post("/createSubscription", userController.createSubscription);
 router.get("/getPackages", userController.getPackages);
 router.post("/userbuysubscription", userController.userbuysubscription);
 
+router.get("/packageDeail/:id", userController.packageDeail);
 
 
 module.exports = router;

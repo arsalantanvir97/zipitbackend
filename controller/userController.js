@@ -268,7 +268,23 @@ const registerUser = async (req, res) => {
       });
     }
   };
-  module.exports = {
+  const packageDeail = async (req, res) => {
+    try {
+
+        const package = await Package.findById(
+          req.params.id
+        );
+        res.status(201).json({
+          package
+        });
+    } catch (err) {
+      res.status(500).json({
+        message: err.toString()
+      });
+    }
+  };
+  
+  module.exports = {packageDeail,
     registerUser,userbuysubscription,
 authUser,
 recoverPassword,
