@@ -4,6 +4,7 @@ const cors = require("cors");
 const https = require("https");
 const fs = require("fs");
 const axios = require("axios");
+const multer = require('multer')
 const uuid   = require("uuid")
 
 const app = express();
@@ -15,6 +16,7 @@ const foreCast = require("./utils/forecast");
 const geoCode = require("./utils/geocode");
 const Stripe  = require("stripe")
 const stripe = Stripe("sk_test_OVw01bpmRN2wBK2ggwaPwC5500SKtEYy9V");
+const { fileFilter, fileStorage } = require('./multer.js')
 
 const Port = process.env.Port || 6058;
 const connection = require("./config/db");
@@ -29,7 +31,7 @@ app.use("/api/user", userRoutes);
 //connecting the db
 connection();
 
-const local = false;
+const local = true;
 let credentials = {};
 
 if (local) {
@@ -90,6 +92,20 @@ app.post("/api/checkout", async (req, res) => {
     res.json(error);
   }
 });
+
+app.use(
+  multer({
+    storage: fileStorage,
+    fileFilter: fileFilter,
+  }).fields([
+    {
+      name: 'user_image',
+      maxCount: 1,
+    },
+  ])
+)
+
+
 app.get("/", (req, res) => {
   res.send("Zip it solar is Running");
 });

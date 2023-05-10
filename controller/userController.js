@@ -1,4 +1,6 @@
 const User = require("../models/UserModel");
+const Admin = require("../models/AdminModel");
+
 const Reset = require("../models/ResetModel");
 const Package = require("../models/PackageModel");
 
@@ -67,6 +69,58 @@ const registerUser = async (req, res) => {
       });
     }
   };
+
+  const registerAdmin = async (req, res) => {
+    const { firstName,
+      lastName,
+      email,
+      password } = req.body;
+    console.log("req.body", req.body);
+    const AdminExists = await Admin.findOne({ email });
+  
+    if (AdminExists) {
+      return res.status(401).json({
+        error: "Admin already exist"
+      });
+    }
+  
+    const admin = await Admin.create({
+      firstName,
+      lastName,
+      email,
+      password
+    });
+    console.log("admin", admin);
+    if (admin) {
+  
+      // const notification = {
+      //   notifiableId: null,
+      //   notificationType: "admin",
+      //   title: `${type} Created`,
+      //   body: `A ${type} name ${adminname} has registered`,
+      //   payload: {
+      //     type: "admin",
+      //     id: admin._id
+      //   }
+      // };
+      // CreateNotification(notification);
+      await admin.save();
+      await res.status(201).json({
+        _id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+
+        token: generateToken(admin._id),
+        message: "Successfully created Admin!"
+      });
+    } else {
+      return res.status(401).json({
+        error: "false"
+      });
+    }
+  };
+  
   const authUser = (async (req, res) => {
     console.log("authAdmin", req.body);
     const { email, password,  } = req.body;
@@ -86,6 +140,28 @@ const registerUser = async (req, res) => {
         subscription:user.subscription,
         is_recurring:user.is_recurring,
         token: generateToken(user._id),
+      });
+    } else {
+      console.log("error");
+      return res.status(201).json({
+        message: "Invalid Email or Password"
+      });
+    }
+  });
+  const authAdmin = (async (req, res) => {
+    console.log("authAdmin", req.body);
+    const { email, password,  } = req.body;
+  
+    const admin = await Admin.findOne({ email });
+    if (admin && (await admin.matchPassword(password))) {
+      await res.status(200).json({
+        _id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        userImage: admin.userImage,
+
+        token: generateToken(admin._id),
       });
     } else {
       console.log("error");
@@ -283,13 +359,52 @@ const registerUser = async (req, res) => {
       });
     }
   };
+  const editAdminProfile = (async (req, res) => {
+    try {
+      const { firstName, lastName } = req.body;
+      let user_image =
+        req.files &&
+        req.files.user_image &&
+        req.files.user_image[0] &&
+        req.files.user_image[0].path;
+    console.log('user_image',user_image,req.body)
+
+      const admin = await Admin.findOne();
+      console.log('admin',admin)
+      admin.firstName = firstName ? firstName : admin.firstName;
+      admin.lastName = lastName ? lastName : admin.lastName;
+      admin.userImage = user_image ? user_image : admin.userImage;
+    
+      await admin.save();
+      // await res.status(201).json({
+      //   message: "Admin Update",
+      //   admin,
+      // });
+      await res.status(201).json({
+        _id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        userImage: admin.userImage,
+        token: generateToken(admin._id)
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: error.toString()
+      });
+    }
   
+  });
   module.exports = {packageDeail,
     registerUser,userbuysubscription,
 authUser,
 recoverPassword,
+editAdminProfile,
 verifyRecoverCode,
 resetPassword,
-createSubscription,getPackages
+registerAdmin,
+authAdmin,
+createSubscription,getPackages,
+
   };
   
