@@ -11,6 +11,7 @@ const app = express();
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const stationRoutes = require("./routes/stationRoutes");
 const userRoutes = require("./routes/userRoutes");
+const Payment = require("./models/PaymentModel");
 
 const foreCast = require("./utils/forecast");
 const geoCode = require("./utils/geocode");
@@ -20,6 +21,7 @@ const { fileFilter, fileStorage } = require('./multer.js')
 
 const Port = process.env.Port || 6058;
 const connection = require("./config/db");
+const { CreateNotification } = require("./utils/notification");
 
 app.use(cors());
 app.options("*", cors());
@@ -31,7 +33,7 @@ app.use("/api/user", userRoutes);
 //connecting the db
 connection();
 
-const local = true;
+const local = false;
 let credentials = {};
 
 if (local) {
@@ -53,8 +55,9 @@ app.post("/api/checkout", async (req, res) => {
   let error;
   let status;
   try {
-    const { product, token } = req.body;
-    console.log(product, typeof product, "prodprice");
+    const { product, token,userid,subscriptionid ,firstName,packagename} = req.body;
+  
+    console.log(product, userid,subscriptionid);
     const customer = await stripe.customers.create({
       email: token.email,
       source: token.id
@@ -86,6 +89,25 @@ app.post("/api/checkout", async (req, res) => {
     res.json(charge);
 
     status = "success";
+
+    const payment = new Payment({
+      amount: product,
+      userid,
+      subscriptionid,
+    })
+    await payment.save()
+
+    const notification = {
+      notifiableId: null,
+      notificationType: "Admin",
+      title: "User Created",
+      body: `A user named ${firstName} have just subscribed to a package named ${packagename}`,
+      payload: {
+        type: "USER",
+        id: userid,
+      },
+    };
+    CreateNotification(notification);
   } catch (error) {
     console.error("Error:", error);
     status = "failure";

@@ -27,7 +27,7 @@ const UserSchema = mongoose.Schema(
 
     subscriptionid: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Subscription"
+      ref: "Package"
     },
     subscription: { type: Object, default: null },
     is_recurring: { type: Boolean },
