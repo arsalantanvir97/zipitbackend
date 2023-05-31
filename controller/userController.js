@@ -292,7 +292,7 @@ const resetPassword = async (req, res) => {
         paymentResult: user.paymentResult,
         status: user.status,
         subscriptionid: user.subscriptionid,
-        subscription: user, subscription,
+        subscription: user.subscription,
         is_recurring: user.is_recurring,
         token: generateToken(user._id),
       });
